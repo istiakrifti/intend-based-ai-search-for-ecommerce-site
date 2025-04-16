@@ -1,0 +1,10 @@
+langchain
+langchain_community
+langgraph
+IPython
+psycopg2
+langchain-openai
+python-dotenv
+faiss-cpu
+langchain-huggingface
+pandas
