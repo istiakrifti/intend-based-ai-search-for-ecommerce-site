@@ -11,7 +11,6 @@ from langchain_community.embeddings import HuggingFaceBgeEmbeddings
             
 from constants import *
 
-
 class Retriever:
     """
     A comprehensive retriever class that supports multiple retrieval strategies
@@ -19,25 +18,22 @@ class Retriever:
     """
     _instance = None
     saved_retrievals = []
-    saved_reranked_retrievals = []
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Retriever, cls).__new__(cls)
         return cls._instance
     
-    def __init__(self, reranker=None, query_expansion_engine=None, config=None):
+    def __init__(self, query_expansion_engine=None, config=None):
         """
         Initialize the retriever with various retrieval methods.
         
         Args:
-            reranker: The reranker instance to use
             query_expansion_engine: The query expansion engine to use
             config: Configuration for the retriever
         """
         if not hasattr(self, 'initialized'):
             self.initialized = True
-            self.reranker = reranker
             self.query_expansion_engine = query_expansion_engine
             self.config = config or {}
             
@@ -56,7 +52,6 @@ class Retriever:
         
         # Set up embeddings based on the model
         if 'bge' in embedding_model_name.lower():
-
             model_kwargs = {"device": "cpu"}
             encode_kwargs = {"normalize_embeddings": True}
             embedding_model = HuggingFaceBgeEmbeddings(
@@ -104,7 +99,6 @@ class Retriever:
     def clear_saved_retrievals(self):
         """Clear saved retrievals"""
         self.saved_retrievals = []
-        self.saved_reranked_retrievals = []
     
     def retrieve(self, query_text, collection='default', n_retrievals=None):
         """
@@ -174,7 +168,6 @@ class Retriever:
             
         return retrievals
     
-    
     def fusion_retrieve(self, query_text, collection='default', n_retrievals=None):
         """RAG-Fusion with query expansion"""
         if n_retrievals is None:
@@ -201,63 +194,53 @@ class Retriever:
         # Return raw results for reranking
         return all_results
     
-    def get_reranked_retrievals(self, query_text, collection='default', n_retrievals=None):
+    def show_retrievals(self,results, verbose=True):
         """
-        Retrieve and rerank documents
+        Utility function to display results in a readable format,
+        handling both retriever and reranker output formats.
         
         Args:
-            query_text: The query text
-            collection: The collection to search in
-            n_retrievals: Number of documents to retrieve
-            
-        Returns:
-            List of reranked retrievals
-        """
-        if not self.reranker:
-            print("No reranker configured, returning standard retrievals")
-            return self.retrieve(query_text, collection, n_retrievals)
-        
-        retrievals = self.retrieve(query_text, collection, n_retrievals)
-        
-        # Handle RAG-Fusion results differently
-        if self.current_strategy == 'fusion':
-            # For fusion, retrievals is already a list of lists
-            reranked = self.reranker.rerank(retrievals, query=query_text)
-        else:
-            # For other strategies, wrap in a list
-            reranked = self.reranker.rerank([retrievals], query=query_text)
-        
-        reranked_retrievals = self.reranker.get_documents_only(reranked, top_k=n_retrievals)
-        
-        # Save reranked retrievals
-        self.saved_reranked_retrievals.append({
-            'query': query_text,
-            'strategy': self.current_strategy,
-            'collection': collection,
-            'reranker': self.reranker.strategy,
-            'retrievals': reranked_retrievals
-        })
-        
-        return reranked_retrievals
-    
-    def show_retrievals(self, retrievals, verbose=True):
-        """
-        Display retrievals in a readable format
-        
-        Args:
-            retrievals: List of retrievals to display
+            results: List of results to display (can be retrievals or reranked results)
             verbose: Whether to print full document content
         """
-        print('\n\nRetrievals:\n')
-        for i, r in enumerate(retrievals):
-            document = r['document'] if verbose else r['document'][:100] + '...'
-            distance = r.get('distance', 'N/A')
-            
-            print(f'\n{i+1}.\nDistance = {distance}')
-            print(f'{document}\n')
-            if 'metadata' in r and verbose:
-                print(f"Metadata: {r['metadata']}")
-
+        print('\n\nResults:\n')
+        
+        # Check if we're dealing with (doc, score) tuples from reranker
+        if results and isinstance(results[0], tuple) and len(results[0]) == 2:
+            # Handle reranked results format (list of (doc, score) tuples)
+            for i, (doc, score) in enumerate(results):
+                print(f'\n{i+1}.\nScore = {score:.4f}')
+                
+                # Extract document content based on its type
+                if isinstance(doc, dict) and 'document' in doc:
+                    document = doc['document'] if verbose else doc['document'][:100] + '...'
+                    print(f'{document}\n')
+                    if 'metadata' in doc and verbose:
+                        print(f"Metadata: {doc['metadata']}")
+                elif hasattr(doc, 'page_content'):
+                    # It's a Document object
+                    document = doc.page_content if verbose else doc.page_content[:100] + '...'
+                    print(f'{document}\n')
+                    if hasattr(doc, 'metadata') and verbose:
+                        print(f"Metadata: {doc.metadata}")
+                else:
+                    # Other format
+                    document = str(doc) if verbose else str(doc)[:100] + '...'
+                    print(f'{document}\n')
+        else:
+            # Handle standard retriever format (list of dictionaries)
+            for i, r in enumerate(results):
+                if isinstance(r, dict) and 'document' in r:
+                    document = r['document'] if verbose else r['document'][:100] + '...'
+                    distance = r.get('distance', r.get('score', 'N/A'))
+                    
+                    print(f'\n{i+1}.\nDistance/Score = {distance}')
+                    print(f'{document}\n')
+                    if 'metadata' in r and verbose:
+                        print(f"Metadata: {r['metadata']}")
+                else:
+                    # Handle unexpected format
+                    print(f'\n{i+1}.\n{str(r)[:200]}...')
 # Example usage
 if __name__ == "__main__":
     from reranker import ReRanker
@@ -275,23 +258,33 @@ if __name__ == "__main__":
         num_queries=4,
         model_name=QUERY_EXPANSION_MODEL
     )
-    
-    # Initialize reranker
-    reranker = ReRanker()
-    
-    # Initialize retriever with reranker and query expansion
     retriever = Retriever(
-        reranker=reranker, 
         query_expansion_engine=query_expansion,
         config=config
     )
-    
-    # Set retrieval strategy
-    retriever.set_strategy('fusion')  # Options: 'dense','fusion' fusion hoile ReRanker e fusion set koro
-    
-    # Retrieve and rerank
+    retriever.set_strategy('fusion')  # Or 'dense' 
+    # Step 1: Retrieve documents using the Retriever
     query = "gaming laptop with good graphics"
-    retrievals = retriever.get_reranked_retrievals(query)
+    retrieved_docs = retriever.retrieve(query)
     
-    # Show the results
-    retriever.show_retrievals(retrievals)
+    print("=== Retrieved Documents (Before Reranking) ===")
+    if retriever.current_strategy == 'dense':
+        retriever.show_retrievals(retrieved_docs)
+    else:
+        print("Showing first set of fusion results (from expanded query):")
+        retriever.show_retrievals(retrieved_docs[0])
+    
+    # Option 2: General rerank method with any strategy
+     # Initialize reranker
+    reranker = ReRanker(strategy="bge")
+    reranked_docs = reranker.rerank(
+        retrieved_docs, 
+        query, 
+        top_k=5, 
+    )
+
+    print("=== Retrieved Documents (After Reranking) ===")
+
+    reranker.get_documents_only(reranked_docs)
+    
+    
