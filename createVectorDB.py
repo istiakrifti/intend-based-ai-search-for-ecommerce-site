@@ -6,6 +6,7 @@ from langchain.schema import Document
 from dotenv import load_dotenv
 import psycopg2
 import pandas as pd
+from constants import *
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -77,18 +78,16 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 #     }
 
 #     docs.append(Document(page_content=content, metadata=metadata))
-    # docs.append(Document(page_content=content))
+#     docs.append(Document(page_content=content))
 
-embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-
+embedding_model = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
 # vector_db = FAISS.from_documents(docs, embedding_model)
-
 # vector_db.save_local("vector_db")
-
 vector_db = FAISS.load_local("vector_db", embedding_model, allow_dangerous_deserialization=True)
 
 query = "289000"
 results = vector_db.similarity_search(query, k=5)
 for idx, doc in enumerate(results, 1):
+    print(doc)
     print(f"Result {idx} Price: {doc.metadata['price']}")
 

@@ -4,6 +4,8 @@ langgraph
 IPython
 psycopg2
 langchain-openai
+langchain_groq
+langchain_anthropic
 python-dotenv
 faiss-cpu
 langchain-huggingface
