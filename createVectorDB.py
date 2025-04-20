@@ -9,6 +9,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 import psycopg2
 import pandas as pd
+from constants import *
 
 load_dotenv()
 # os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
