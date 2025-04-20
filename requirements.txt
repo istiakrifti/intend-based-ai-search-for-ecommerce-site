@@ -8,3 +8,8 @@ python-dotenv
 faiss-cpu
 langchain-huggingface
 pandas
+ipykernel
+langchain-groq
+pydantic
+FlagEmbedding
+langchain_anthropic

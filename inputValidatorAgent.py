@@ -3,10 +3,13 @@ from langchain_core.prompts import PromptTemplate
 from langchain_community.chat_models import ChatOllama
 from langchain.chains import LLMChain
 from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 class InputValidator:
     def __init__(self, question, context):
@@ -14,9 +17,7 @@ class InputValidator:
         self.context = context
     
     def validate(self):
-        prompt = PromptTemplate(
-            input_variables=["question", "context"],
-            template="""
+        template="""
             You are a helpful assistant for question-answering task.
             You are given a question and a context. Your task is to determine if the question is relevant to the context.
             If the question is relevant to the context, respond with 'Yes'. If it is not relevant, respond with 'No'.
@@ -25,7 +26,9 @@ class InputValidator:
             Context: {context}
             Answer:
             """
-        )
+        
+        prompt = ChatPromptTemplate.from_template(template)
+        prompt.pretty_print()
 
         llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
@@ -41,12 +44,3 @@ class InputValidator:
 
         return result['text']
     
-
-# if __name__ == "__main__":
-#     question = "What is the capital of Bangladesh?"
-#     context = "The capital of France is Paris."
-    
-#     validator = InputValidator(question, context)
-#     result = validator.validate()
-    
-#     print(result)
