@@ -20,7 +20,7 @@ def retrieve_and_rerank(query, retriever, reranker, sql_documents, top_k=5):
     retrieved_docs = retriever.retrieve(query)
     
     print("Before")
-    retriever.show_retrievals(retrieved_docs)
+    # retriever.show_retrievals(retrieved_docs)
     print("After")    
     # Step 2: Process based on retrieval strategy
     if retriever.current_strategy == 'fusion':
@@ -47,36 +47,28 @@ def get_result(results, verbose=True):
     
     Args:
         results: List of results to process (can be retrievals or reranked results)
-        all_metadata: List to collect metadata from the results
         verbose: Whether to collect full document content (default is True)
     """
     all_metadata = []
-    # Check if we're dealing with (doc, score) tuples from reranker
+
     if results and isinstance(results[0], tuple) and len(results[0]) == 2:
-        # Handle reranked results format (list of (doc, score) tuples)
+        # Reranked format: list of (doc, score) tuples
         for i, (doc, score) in enumerate(results):
-            # Extract document content based on its type
             if isinstance(doc, dict) and 'document' in doc:
-                document = doc['document'] if verbose else doc['document'][:100] + '...'
-                all_metadata.append({'id': f"sql_{i + 1}", 'document': document, 'metadata': doc.get('metadata', {}), 'distance': score})
+                all_metadata.append(doc.get('metadata', {}))
             elif hasattr(doc, 'page_content'):
-                # It's a Document object
-                document = doc.page_content if verbose else doc.page_content[:100] + '...'
-                all_metadata.append({'id': f"sql_{i + 1}", 'document': document, 'metadata': getattr(doc, 'metadata', {}), 'distance': score})
+                all_metadata.append(getattr(doc, 'metadata', {}))
             else:
-                # Other format
-                document = str(doc) if verbose else str(doc)[:100] + '...'
-                all_metadata.append({'id': f"sql_{i + 1}", 'document': document, 'metadata': 'N/A', 'distance': score})
+                all_metadata.append({})
     else:
-        # Handle standard retriever format (list of dictionaries)
+        # Standard retriever format
         for i, r in enumerate(results):
             if isinstance(r, dict) and 'document' in r:
-                document = r['document'] if verbose else r['document'][:100] + '...'
-                distance = r.get('distance', r.get('score', 'N/A'))
-                all_metadata.append({'id': f"sql_{i + 1}", 'document': document, 'metadata': r.get('metadata', {}), 'distance': distance})
+                all_metadata.append(r.get('metadata', {}))
+            elif hasattr(r, 'page_content'):
+                all_metadata.append(getattr(r, 'metadata', {}))
             else:
-                # Handle unexpected format
-                all_metadata.append({'id': f"sql_{i + 1}", 'document': str(r)[:100] + '...', 'metadata': 'N/A', 'distance': 'N/A'})
+                all_metadata.append({})
 
     return all_metadata
 
@@ -137,7 +129,7 @@ def final_retrieval(query, sql_documents):
     
     # Show using retriever's method
     
-    retriever.show_retrievals(formatted_docs)
+    # retriever.show_retrievals(formatted_docs)
     all_metadata = get_result(formatted_docs)
 
-    return {"final_result": all_metadata}
+    return all_metadata

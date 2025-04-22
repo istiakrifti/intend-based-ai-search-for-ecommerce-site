@@ -1,5 +1,4 @@
 INSERT INTO products (id, base_price, discount, rating, category, subcategory, brand, stock, name) VALUES ('3218', '4700', '0', '0', 'Component', 'desktop_ram', 'Team', '10', 'Team Delta RGB 8GB 3600MHz DDR4 Desktop RAM');
-
 INSERT INTO products (id, base_price, discount, rating, category, subcategory, brand, stock, name) VALUES ('1005', '145000', '0', '0', 'Laptop', 'Gaming_Laptop', 'Acer', '10', 'Acer Nitro 5 AN515-45-R7BF Ryzen 5 16GB RAM 256GB SSD RTX 3060 6GB Graphics 15.6" FHD 144Hz Gaming Laptop');
 INSERT INTO products (id, base_price, discount, rating, category, subcategory, brand, stock, name) VALUES ('1013', '84000', '0', '0', 'Laptop', 'Gaming_Laptop', 'HP', '10', 'HP Pavilion 15-eg1043TX Core i5 11th Gen MX450 2GB Graphics 15.6" FHD Laptop');
 INSERT INTO products (id, base_price, discount, rating, category, subcategory, brand, stock, name) VALUES ('1017', '88000', '0', '0', 'Laptop', 'Gaming_Laptop', 'Acer', '10', 'Acer Nitro 5 AN515-56 Core i5 11th Gen 256GB SSD, GTX 1650 4GB, 15.6" FHD 144hz Gaming Laptop');

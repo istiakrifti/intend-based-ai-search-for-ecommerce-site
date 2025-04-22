@@ -1,6 +1,7 @@
+import logging
 from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
-from langchain import SQLDatabase
+from langchain_community.utilities import SQLDatabase
 from langchain.chains import create_sql_query_chain
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
@@ -12,69 +13,41 @@ import pandas as pd
 import psycopg2
 import os
 import json
+import lrucache
 
+# ------------------- SETUP -------------------
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 dbname = os.environ.get("DB_NAME")
-user = os.environ.get("DB_USER")    
+user = os.environ.get("DB_USER")
 password = os.environ.get("DB_PASSWORD")
-host = os.environ.get("DB_HOST")    
+host = os.environ.get("DB_HOST")
 port = os.environ.get("DB_PORT")
 
+# ------------------- LOGGER SETUP -------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    filename="sql_agent.log",
+    filemode="a"
+)
+
+logger = logging.getLogger(__name__)
+
+# ------------------- AGENT CLASS -------------------
 class SQLAgent:
     def __init__(self, db_url, question):
         self.db_url = db_url
         self.question = question
+        logger.info(f"SQLAgent initialized with question: '{self.question}'")
 
     def format_generator(self, result):
-        # llm_for_formation = ChatOpenAI(model="gpt-4o", response_format={"type": "json_object"},temperature=0.7)
-
-        # formation_prompt = PromptTemplate(
-        #     input_variables=["sql_query", "result"],
-        #     template="""
-
-        #     You are a helpful assistant. Given the following SQL query result, format it into a JSON object with the necessary column names as keys and their corresponding values, following the exact order of the columns as they appear in the SQL query.
-        #     SQL Query: {sql_query}
-        #     Result: {result}
-        #     Ensure the JSON object is well-structured and includes all relevant columns from the result in the same order as in the SQL query. The columns are:
-        #     - id
-        #     - name
-        #     - base_price
-        #     - discount
-        #     - rating        
-        #     - category
-        #     - subcategory   
-        #     - brand
-        #     - stock
-        #     - image_urls
-        #     All the produc's info will be a json object with the keys as mentioned above.
-        #     """    
-        # )
-
-        # chain_for_formation = LLMChain(
-        #     llm=llm_for_formation,
-        #     prompt=formation_prompt,
-        #     output_parser=JsonOutputParser(),
-        # )
-
-        # generated_result = chain_for_formation.invoke({
-        #     "sql_query": query_result,
-        #     "result": result,
-        # })
-
-        
-        # final_result = None
-        # try:
-        #     final_result = generated_result['result']
-        # except Exception as e:
-        #     return None
+        logger.info("Formatting query results into structured documents.")
 
         formatted_result = []
-
         for idx, row in result.iterrows():
-            # Generate the 'id' in the format sql_1, sql_2, ...
             doc_id = f"sql_{idx + 1}"
-        
+
             content = (
                 f"The {row['name']} by {row['brand']} is a premium offering in the {row['category']} > "
                 f"{row['subcategory']} segment. Priced at ${row['base_price']}, it is currently available "
@@ -84,41 +57,43 @@ class SQLAgent:
                 f"Availability Status: {'In stock' if row['stock'] > 0 else 'Temporarily unavailable'}."
             )
 
-            # Prepare the metadata (current row)
-            metadata = row.to_dict()  # Use the current dictionary as metadata
+            metadata = row.to_dict()
 
-            # Set the distance to 1 (as per the requirement)
-            distance = 1
-
-            # Create the formatted document structure
             formatted_result.append({
                 'id': doc_id,
                 'document': content,
                 'metadata': metadata,
-                'distance': distance
+                'distance': 1
             })
-        
+
+        logger.info(f"Generated {len(formatted_result)} formatted results.")
         return formatted_result
 
     def execute_query(self):
-        db = SQLDatabase.from_uri(self.db_url)
+        logger.info("Starting query execution process.")
 
-        conn = psycopg2.connect(
-            dbname=dbname,
-            user=user,
-            password=password,
-            host=host,
-            port=port
-        )
+        try:
+            db = SQLDatabase.from_uri(self.db_url)
+            conn = psycopg2.connect(
+                dbname=dbname,
+                user=user,
+                password=password,
+                host=host,
+                port=port
+            )
+            logger.info("Database connection established.")
+        except Exception as e:
+            logger.error(f"Failed to connect to the database: {e}")
+            return None
 
         llm = ChatOpenAI(model='gpt-4o', response_format={"type": "json_object"}, temperature=0)
-        
-        template="""You are a {dialect} expert. Given an input question, create a syntactically correct {dialect} query to run.
+
+        template = """You are a {dialect} expert. Given an input question, create a syntactically correct {dialect} query to run.
             Unless the user specifies in the question a specific number of examples to obtain, query for at most {top_k} results using the LIMIT clause as per {dialect}. You can order the results to return the most informative data in the database.
             Try to understand what kind of products the user is looking for and write query to fetch all the columns related to the products. To fetch all the products you can use this at the first
             SELECT p.id, p.name, p.base_price, p.discount, p.rating, 
             p.category, p.subcategory, p.brand, p.stock,
-    
+
             COALESCE(
                 json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
                 FILTER (WHERE s.attr_name IS NOT NULL), '[]'
@@ -157,59 +132,67 @@ class SQLAgent:
             Use format:
 
             Please return the initial draft and final query in JSON format with keys 'initial query' and 'final query'.
+        """
 
-            """
-        # prompt.pretty_print()
-        
         retry_attempts = 2
         query_result = None
         result = None
         error_message = None
 
         for attempt in range(retry_attempts):
-            template_with_error = template
+            logger.info(f"Query generation attempt {attempt + 1}/{retry_attempts}")
 
+            template_with_error = template
             if error_message:
                 template_with_error = f"{error_message} \n\n {template}"
-            prompt = ChatPromptTemplate.from_template(template_with_error)
-            prompt.pretty_print()
-            chain = create_sql_query_chain(llm, db, prompt=prompt) | JsonOutputParser()
-            query = chain.invoke(
-                {
+
+            try:
+                prompt = ChatPromptTemplate.from_template(template_with_error)
+                chain = create_sql_query_chain(llm, db, prompt=prompt) | JsonOutputParser()
+
+                query = chain.invoke({
                     "question": self.question,
                     "dialect": db.dialect,
                     "top_k": 10,
                     "table_info": db.get_table_info(),
-                }
-            )
-            
-            try:
+                })
+
+                # Log initial and final SQL queries
+                logger.info(f"Initial SQL query draft:\n{query.get('initial query', 'N/A')}")
+                logger.info(f"Final SQL query:\n{query.get('final query', 'N/A')}")
+
                 if not query['final query']:
-                    raise ValueError("The final query is missing in the json response.")
+                    raise ValueError("Missing 'final query' in the response.")
+
                 query_result = query['final query']
-                print(f"Query: {query_result}")
-                # result = db.run(query_result)
+
+                if query_result in lrucache.cache:
+                    print("Cache hit! Returning cached result.")
+                    return lrucache.cache[query_result]
+
                 df = pd.read_sql(query_result, conn)
-                # print(df.head(1))
-                # result = df.to_json(orient='records') 
-                # parsed_json = json.loads(result)
-                # result = json.dumps(parsed_json, ensure_ascii=False)
+
+                if df.empty:
+                    logger.warning("Query executed successfully but returned no results.")
+                    return None
+
                 result = df
-                # print(result)
                 break
+
             except Exception as e:
-                error_message = f"Please solve the error. The error message is: {str(e)}"
-                print(error_message)
+                error_message = f"Error during query generation or execution: {str(e)}"
+                logger.error(error_message)
 
-        if result.empty:
-            return None
-        
         conn.close()
-        formatted_result = self.format_generator(result)
+        logger.info("Database connection closed.")
 
-        print("-----------------------------------")
-        print(f"Formatted Result: {formatted_result}")
-        print("-----------------------------------")
-        return formatted_result  
-    
-# returning None if the query is not valid or the result is empty, otherwise returning the result in JSON format.
+        if result is not None:
+            formatted_result = self.format_generator(result)
+            # key = lrucache.get_normalized_cache_key(query_result)
+            lrucache.cache[query_result] = formatted_result
+            logger.info("Returning formatted result.")
+            logger.info("Formatted Result:\n%s", json.dumps(formatted_result, indent=2))
+            return formatted_result
+        else:
+            logger.warning("No result to format; returning None.")
+            return None

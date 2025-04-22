@@ -4,6 +4,7 @@ from langchain_community.chat_models import ChatOllama
 from langchain.chains import LLMChain
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
 import os
 from dotenv import load_dotenv
 
@@ -21,10 +22,10 @@ class InputValidator:
             You are a helpful assistant for question-answering task.
             You are given a question and a context. Your task is to determine if the question is relevant to the context.
             If the question is relevant to the context, respond with 'Yes'. If it is not relevant, respond with 'No'.
-            Do not provide any additional information or explanation. 
+            Do not provide any additional information or explanation.
+            
             Question: {question} 
             Context: {context}
-            Answer:
             """
         
         prompt = ChatPromptTemplate.from_template(template)
@@ -39,7 +40,6 @@ class InputValidator:
             # verbose=True
         )
 
-    
         result = rag_chain.invoke({"question": self.question, "context": self.context})
 
         return result['text']

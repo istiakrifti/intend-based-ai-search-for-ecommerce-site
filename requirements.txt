@@ -15,3 +15,10 @@ langchain-groq
 pydantic
 FlagEmbedding
 langchain_anthropic
+fastapi
+pydantic
+uvicorn
+asyncpg
+cachetools
+sqlglot
+jinja2
