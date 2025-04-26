@@ -22,37 +22,21 @@ password = os.environ.get("DB_PASSWORD")
 host = os.environ.get("DB_HOST")    
 port = os.environ.get("DB_PORT")
 
-# conn = psycopg2.connect(
-#     dbname=dbname,
-#     user=user,
-#     password=password,
-#     host=host,
-#     port=port
-# )
+conn = psycopg2.connect(
+    dbname=dbname,
+    user=user,
+    password=password,
+    host=host,
+    port=port
+)
 
-# query = """
-# SELECT 
-#     p.id, p.name, p.base_price, p.discount, p.rating, 
-#     p.category, p.subcategory, p.brand, p.stock,
-    
-#     COALESCE(
-#         json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
-#         FILTER (WHERE s.attr_name IS NOT NULL), '[]'
-#     ) AS specs,
+query = """
+SELECT * FROM products;
+"""
 
-#     COALESCE(
-#         array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), 
-#         ARRAY[]::VARCHAR[]
-#     ) AS image_urls
-
-# FROM products p
-# LEFT JOIN spec_table s ON p.id = s.product_id
-# LEFT JOIN images i ON p.id = i.product_id
-# GROUP BY p.id;
-# """
-
-# df = pd.read_sql(query, conn)
-# conn.close()
+df = pd.read_sql(query, conn)
+# df = pd.read_csv('cleaned_products')
+conn.close()
 
 # # print(df.columns)
 # # print(df.shape)
@@ -60,38 +44,26 @@ port = os.environ.get("DB_PORT")
 
 # # df.to_csv("products.csv", index=False)
 
-# docs = []
-# for _, row in df.iterrows():
-#     specs = row['specs']
-#     spec_text = "; ".join(
-#         f"{k}: {v}" for d in specs for k, v in d.items()
-#     )
-#     content = (
-#         f"The {row['name']} by {row['brand']} is a premium offering in the {row['category']} > "
-#         f"{row['subcategory']} segment. Priced at ${row['base_price']}, it is currently available "
-#         f"at a discount of {row['discount']}%. This product has received an average customer rating "
-#         f"of {row['rating']} stars.\n\n"
-        
-#         f"Product Specifications:\n{spec_text}\n\n"
+docs = []
+for _, row in df.iterrows():
+    
+    content = (
+        f"Title: {row['title']}\n"
+        f"Brand: {row['brand']}\n"
+        f"Description: {row['description']}\n"
+        f"specs: {row['specs']}\n"
+    )
 
-#         f"Availability Status: {'In stock' if row['stock'] > 0 else 'Temporarily unavailable'}."
-#     )
+    metadata = {
+        "id": row["product_id"],
+        "title": row["title"],
+        "brand": row["brand"],
+        "price": float(row["price"]),
+        "description": row["description"],
+        "specs": row["specs"],
+    }
 
-#     metadata = {
-#         "id": row["id"],
-#         "name": row["name"],
-#         "brand": row["brand"],
-#         "price": float(row["base_price"]),
-#         "discount": float(row["discount"]),
-#         "rating": float(row["rating"]),
-#         "category": row["category"],
-#         "subcategory": row["subcategory"],
-#         "stock": row["stock"],
-#         "specs": row['specs'],
-#         "image_urls": row["image_urls"] 
-#     }
-
-#     docs.append(Document(page_content=content, metadata=metadata))
+    docs.append(Document(page_content=content, metadata=metadata))
 #     # docs.append(Document(page_content=content))
 
 # llm = ChatGroq(
@@ -137,22 +109,22 @@ port = os.environ.get("DB_PORT")
 
 
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-# index = faiss.IndexFlatL2(len(OpenAIEmbeddings().embed_query("hello world")))
-# vector_db = FAISS(
-#     embedding_function=OpenAIEmbeddings(),
-#     index=index,
-#     docstore= InMemoryDocstore(),
-#     index_to_docstore_id={}
-# )
+index = faiss.IndexFlatL2(len(OpenAIEmbeddings().embed_query("hello world")))
+vector_db = FAISS(
+    embedding_function=OpenAIEmbeddings(),
+    index=index,
+    docstore= InMemoryDocstore(),
+    index_to_docstore_id={}
+)
 
-# ids = [str(row["id"]) for _, row in df.iterrows()]
+ids = [str(row["product_id"]) for _, row in df.iterrows()]
 
-# vector_db.add_documents(documents=docs, ids=ids)
+vector_db.add_documents(documents=docs, ids=ids)
 # # vector_db = FAISS.from_documents(docs, embedding_model)
 
-# vector_db.save_local("vector_db_temp")
+vector_db.save_local("vector_db2")
 
-vector_db = FAISS.load_local("vector_db_temp", embedding_model, allow_dangerous_deserialization=True)
+# vector_db = FAISS.load_local("vector_db_temp", embedding_model, allow_dangerous_deserialization=True)
 
 # new_metadata = {
 #     "id": "123456",  # this is the unique product id
@@ -190,12 +162,12 @@ vector_db = FAISS.load_local("vector_db_temp", embedding_model, allow_dangerous_
 # Now get the actual Document from the in-memory docstore
 # vector_db.delete(ids=["123456"])
 # vector_db.save_local("vector_db_temp")
-doc = vector_db.docstore._dict['123456']
+# doc = vector_db.docstore._dict['123456']
 
 # Print the content and metadata
-print("--- Document at Index 2 ---")
-print("Content:\n", doc.page_content)
-print("\nMetadata:\n", json.dumps(doc.metadata, indent=2))
+# print("--- Document at Index 2 ---")
+# print("Content:\n", doc.page_content)
+# print("\nMetadata:\n", json.dumps(doc.metadata, indent=2))
 # for i, doc in enumerate(vector_db.docstore._dict.values()):
 #     if i >= 1:
 #         break

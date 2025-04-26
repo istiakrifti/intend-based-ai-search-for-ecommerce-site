@@ -74,8 +74,17 @@ def build_workflow():
     )
     workflow.add_edge("parallel_node", "rerank")
     workflow.add_edge("rerank", END)
+    
+    # ✅ First compile it
+    compiled_workflow = workflow.compile()
 
-    return workflow.compile()
+    # mermaid_code = compiled_workflow.get_graph().draw_mermaid()
+
+    # # Save the Mermaid code to a .mmd file
+    # with open("workflow_graph.mmd", "w") as f:
+    #     f.write(mermaid_code)
+
+    return compiled_workflow
 
 # ---------- PIPELINE RUNNER ----------
 def run_search_pipeline(query: str):

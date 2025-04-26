@@ -31,26 +31,29 @@ conn = psycopg2.connect(
     port=port
 )
 def prepare_document(product_id):
-    query = f"""
-    SELECT 
-        p.id, p.name, p.base_price, p.discount, p.rating, 
-        p.category, p.subcategory, p.brand, p.stock,
+    # query = f"""
+    # SELECT 
+    #     p.id, p.name, p.base_price, p.discount, p.rating, 
+    #     p.category, p.subcategory, p.brand, p.stock,
         
-        COALESCE(
-            json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
-            FILTER (WHERE s.attr_name IS NOT NULL), '[]'
-        ) AS specs,
+    #     COALESCE(
+    #         json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
+    #         FILTER (WHERE s.attr_name IS NOT NULL), '[]'
+    #     ) AS specs,
 
-        COALESCE(
-            array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), 
-            ARRAY[]::VARCHAR[]
-        ) AS image_urls
+    #     COALESCE(
+    #         array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), 
+    #         ARRAY[]::VARCHAR[]
+    #     ) AS image_urls
 
-    FROM products p
-    LEFT JOIN spec_table s ON p.id = s.product_id
-    LEFT JOIN images i ON p.id = i.product_id
-    WHERE p.id = {product_id}
-    GROUP BY p.id;
+    # FROM products p
+    # LEFT JOIN spec_table s ON p.id = s.product_id
+    # LEFT JOIN images i ON p.id = i.product_id
+    # WHERE p.id = {product_id}
+    # GROUP BY p.id;
+    # """
+    query = """
+    SELECT * FROM products;
     """
 
     df = pd.read_sql(query, conn)
@@ -60,33 +63,24 @@ def prepare_document(product_id):
         return None
 
     row = df.iloc[0]
-    specs = row['specs']
-    spec_text = "; ".join(
-        f"{k}: {v}" for d in specs for k, v in d.items()
-    )
+    # specs = row['specs']
+    # spec_text = "; ".join(
+    #     f"{k}: {v}" for d in specs for k, v in d.items()
+    # )
     content = (
-        f"The {row['name']} by {row['brand']} is a premium offering in the {row['category']} > "
-        f"{row['subcategory']} segment. Priced at ${row['base_price']}, it is currently available "
-        f"at a discount of {row['discount']}%. This product has received an average customer rating "
-        f"of {row['rating']} stars.\n\n"
-        
-        f"Product Specifications:\n{spec_text}\n\n"
-
-        f"Availability Status: {'In stock' if row['stock'] > 0 else 'Temporarily unavailable'}."
+        f"Title: {row['title']}\n"
+        f"Brand: {row['brand']}\n"
+        f"Description: {row['description']}\n"
+        f"specs: {row['specs']}\n"
     )
 
     metadata = {
-        "id": int(row["id"]) if isinstance(row["id"], (np.integer, int)) else row["id"],
-        "name": row["name"],
+        "id": row["product_id"],
+        "title": row["title"],
         "brand": row["brand"],
-        "price": float(row["base_price"]),
-        "discount": float(row["discount"]),
-        "rating": float(row["rating"]),
-        "category": row["category"],
-        "subcategory": row["subcategory"],
-        "stock": int(row["stock"]) if isinstance(row["stock"], (np.integer, int)) else row["stock"],
-        "specs": row['specs'],
-        "image_urls": row["image_urls"] 
+        "price": float(row["price"]),
+        "description": row["description"],
+        "specs": row["specs"],
     }
 
     print(metadata)
@@ -151,5 +145,5 @@ async def upsert_product(batch):
             print(f"Failed to add documents: {e}")
 
     # Save final state
-    vector_db.save_local("vector_db")
+    vector_db.save_local("vector_db2")
     conn.close()

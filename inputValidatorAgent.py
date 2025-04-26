@@ -19,12 +19,14 @@ class InputValidator:
     
     def validate(self):
         template = """
-        We sell products in these categories: laptops, phones, TVs, accessories, and smartwatches.
+        We sell enterprise-grade server components, mainly hard drives (SAS, SATA), processors (Intel Xeon), and related ProLiant server parts.
 
-        You are a helpful assistant. If the user's question is about any of the categories we sell, respond with "Yes", otherwise respond with "No".
+        You are a helpful assistant. If the user's question is about any of the categories we sell — server hard drives, server processors, ProLiant server parts — respond strictly with "Yes".
+        If it is about unrelated items like laptops, phones, TVs, accessories, or general electronics, respond strictly with "No".
 
         Question: {question}
         """
+
         
         prompt = ChatPromptTemplate.from_template(template)
         prompt.pretty_print()

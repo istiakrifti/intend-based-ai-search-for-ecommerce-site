@@ -49,13 +49,11 @@ class SQLAgent:
             doc_id = f"sql_{idx + 1}"
 
             content = (
-                f"The {row['name']} by {row['brand']} is a premium offering in the {row['category']} > "
-                f"{row['subcategory']} segment. Priced at ${row['base_price']}, it is currently available "
-                f"at a discount of {row['discount']}%. This product has received an average customer rating "
-                f"of {row['rating']} stars.\n\n"
-                f"Product Specifications:\n{row['specs']}\n\n"
-                f"Availability Status: {'In stock' if row['stock'] > 0 else 'Temporarily unavailable'}."
-            )
+            f"Title: {row['title']}\n"
+            f"Brand: {row['brand']}\n"
+            f"Description: {row['description']}\n"
+            f"specs: {row['specs']}\n"
+        )
 
             metadata = row.to_dict()
 
@@ -87,22 +85,15 @@ class SQLAgent:
             return None
 
         llm = ChatOpenAI(model='gpt-4o', response_format={"type": "json_object"}, temperature=0)
+        # llm = ChatOllama(model="codellama:latest", temperature=0)
 
         template = """You are a {dialect} expert. Given an input question, create a syntactically correct {dialect} query to run.
             Unless the user specifies in the question a specific number of examples to obtain, query for at most {top_k} results using the LIMIT clause as per {dialect}. You can order the results to return the most informative data in the database.
             Try to understand what kind of products the user is looking for and write query to fetch all the columns related to the products.
 
             The query structure should be based on:
-            SELECT p.id, p.name, p.base_price, p.discount, p.rating,
-                p.category, p.subcategory, p.brand, p.stock,
-                COALESCE(json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
-                            FILTER (WHERE s.attr_name IS NOT NULL), '[]') AS specs,
-                COALESCE(array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), ARRAY[]::VARCHAR[]) AS image_urls
-            FROM products p
-            LEFT JOIN spec_table s ON p.id = s.product_id
-            LEFT JOIN images i ON p.id = i.product_id
+            SELECT * FROM products p
             WHERE ...
-            GROUP BY p.id
             ORDER BY ...
             LIMIT {top_k};
 
@@ -137,7 +128,7 @@ class SQLAgent:
         result = None
         error_message = None
 
-        table_info = db.get_table_info(table_names=["products", "spec_table", "images"])
+        # table_info = db.get_table_info(table_names=["products", "spec_table", "images"])
         # logger.info(f"Table information retrieved: {table_info}")
         for attempt in range(retry_attempts):
             logger.info(f"Query generation attempt {attempt + 1}/{retry_attempts}")
@@ -155,7 +146,7 @@ class SQLAgent:
                     "question": self.question,
                     "dialect": db.dialect,
                     "top_k": 6,
-                    "table_info": table_info
+                    "table_info": db.get_table_info()
                 })
 
                 # Log initial and final SQL queries
