@@ -90,26 +90,22 @@ class SQLAgent:
 
         template = """You are a {dialect} expert. Given an input question, create a syntactically correct {dialect} query to run.
             Unless the user specifies in the question a specific number of examples to obtain, query for at most {top_k} results using the LIMIT clause as per {dialect}. You can order the results to return the most informative data in the database.
-            Try to understand what kind of products the user is looking for and write query to fetch all the columns related to the products. To fetch all the products you can use this at the first
-            SELECT p.id, p.name, p.base_price, p.discount, p.rating, 
-            p.category, p.subcategory, p.brand, p.stock,
+            Try to understand what kind of products the user is looking for and write query to fetch all the columns related to the products.
 
-            COALESCE(
-                json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
-                FILTER (WHERE s.attr_name IS NOT NULL), '[]'
-            ) AS specs,
-
-            COALESCE(
-                array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), 
-                ARRAY[]::VARCHAR[]
-            ) AS image_urls
-
+            The query structure should be based on:
+            SELECT p.id, p.name, p.base_price, p.discount, p.rating,
+                p.category, p.subcategory, p.brand, p.stock,
+                COALESCE(json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) 
+                            FILTER (WHERE s.attr_name IS NOT NULL), '[]') AS specs,
+                COALESCE(array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), ARRAY[]::VARCHAR[]) AS image_urls
             FROM products p
             LEFT JOIN spec_table s ON p.id = s.product_id
             LEFT JOIN images i ON p.id = i.product_id
+            WHERE ...
             GROUP BY p.id
+            ORDER BY ...
+            LIMIT {top_k};
 
-            then you can use the WHERE clause to filter the products based on the user query.
             Pay attention to use only the column names you can see in the tables below. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
             Pay attention to use date('now') function to get the current date, if the question involves "today".
 
@@ -118,7 +114,7 @@ class SQLAgent:
 
             Question: {input}
 
-            Write an initial draft of the query. Then double check the {dialect} query for common mistakes, including:
+            Write a query and check the {dialect} query for common mistakes, including:
             - Using NOT IN with NULL values
             - Using UNION when UNION ALL should have been used
             - Using BETWEEN for exclusive ranges
@@ -131,14 +127,18 @@ class SQLAgent:
 
             Use format:
 
-            Please return the initial draft and final query in JSON format with keys 'initial query' and 'final query'.
+            Please return final query in JSON format with key'final query'.
         """
+
+        
 
         retry_attempts = 2
         query_result = None
         result = None
         error_message = None
 
+        table_info = db.get_table_info(table_names=["products", "spec_table", "images"])
+        # logger.info(f"Table information retrieved: {table_info}")
         for attempt in range(retry_attempts):
             logger.info(f"Query generation attempt {attempt + 1}/{retry_attempts}")
 
@@ -148,13 +148,14 @@ class SQLAgent:
 
             try:
                 prompt = ChatPromptTemplate.from_template(template_with_error)
+    
                 chain = create_sql_query_chain(llm, db, prompt=prompt) | JsonOutputParser()
 
                 query = chain.invoke({
                     "question": self.question,
                     "dialect": db.dialect,
-                    "top_k": 10,
-                    "table_info": db.get_table_info(),
+                    "top_k": 6,
+                    "table_info": table_info
                 })
 
                 # Log initial and final SQL queries

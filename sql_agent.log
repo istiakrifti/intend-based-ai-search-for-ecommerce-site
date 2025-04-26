@@ -1,0 +1,562 @@
+2025-04-26 09:28:22,981 - datasets - INFO - PyTorch version 2.6.0 available.
+2025-04-26 09:32:04,990 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-26 09:32:05,034 - sqlAgent - INFO - SQLAgent initialized with question: 'gaming laptop'
+2025-04-26 09:32:05,034 - sqlAgent - INFO - Starting query execution process.
+2025-04-26 09:32:05,864 - sqlAgent - INFO - Database connection established.
+2025-04-26 09:32:06,442 - sqlAgent - INFO - Query generation attempt 1/2
+2025-04-26 09:32:06,936 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-04-26 09:32:09,712 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-26 09:32:09,727 - sqlAgent - INFO - Initial SQL query draft:
+N/A
+2025-04-26 09:32:09,727 - sqlAgent - INFO - Final SQL query:
+SELECT p.id, p.name, p.base_price, p.discount, p.rating, p.category, p.subcategory, p.brand, p.stock, COALESCE(json_agg(DISTINCT jsonb_build_object(s.attr_name, s.attr_value)) FILTER (WHERE s.attr_name IS NOT NULL), '[]') AS specs, COALESCE(array_agg(DISTINCT i.img_url) FILTER (WHERE i.img_url IS NOT NULL), ARRAY[]::VARCHAR[]) AS image_urls FROM products p LEFT JOIN spec_table s ON p.id = s.product_id LEFT JOIN images i ON p.id = i.product_id WHERE p.category = 'Laptop' AND p.subcategory = 'Gaming_Laptop' GROUP BY p.id ORDER BY p.rating DESC, p.base_price DESC LIMIT 6;
+2025-04-26 09:32:10,119 - sqlAgent - INFO - Database connection closed.
+2025-04-26 09:32:10,119 - sqlAgent - INFO - Formatting query results into structured documents.
+2025-04-26 09:32:10,121 - sqlAgent - INFO - Generated 6 formatted results.
+2025-04-26 09:32:10,121 - sqlAgent - INFO - Returning formatted result.
+2025-04-26 09:32:10,122 - sqlAgent - INFO - Formatted Result:
+[
+  {
+    "id": "sql_1",
+    "document": "The Razer Blade 15 Advanced Model i7 11th Gen 32GB RAM RTX3080 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop by Razer is a premium offering in the Laptop > Gaming_Laptop segment. Priced at $365000.0, it is currently available at a discount of 0.0%. This product has received an average customer rating of 0.0 stars.\n\nProduct Specifications:\n[{'Audio': 'Stereo 2.0 | 2 Speakers 3.5mm Combo-Jack 4-mic array THX Spatial Audio'}, {'Audio Jack Combo': '1 x 3.5mm Combo-Jack'}, {'Battery': 'Built-in 80 WHr rechargeable lithium-ion polymer battery'}, {'Card Reader': '1x UHS-III SD Card Reader'}, {'Dimensions (W x D x H)': '0.67\" x 9.25\" x 13.98\" / 16.99 mm x 235 mm x 355 mm'}, {'Display': '15.6\" FHD (1920 x 1080) 360Hz, 100% SRGB, 2ms, individually factory calibrated'}, {'Graphics_Card': 'NVIDIA GeForce RTX3080 8GB GDDR6 VRAM Graphics'}, {'HDMI': '1x HDMI 2.1'}, {'Keyboard': 'Anti-Ghosting, Per-Key Backlighting, powered by Razer Chroma'}, {'Name': 'Razer Blade 15 Advanced Model i7 11th Gen 32GB RAM RTX3080 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop'}, {'Operating System': 'Windows 10 Home (64-bit)'}, {'Power Supply': '230W power adapter'}, {'Processor': 'Intel Core i7-11800H Processor (24M Cache, 2.30 GHz up to 4.60 GHz)'}, {'RAM': '32GB DDR4 3200MHz dual-channel memory (slotted)'}, {'Special Feature': 'Intel Platform Trust Technology (Intel PTT) security embedded, sTPM 2.0 Windows Cortana'}, {'Storage': '1TB SSD (M.2 NVMe PCIe 4.0 x4) + Open M.2 PCIe 4.0 x4 Slot for easy expansion'}, {'USB (s)': '2 x Thunderbolt 4 (USB-C) 2 x USB-C 3.2 Gen 2, Supports Power Delivery 3 (15W) 3 x USB-A 3.2 Gen 2 1x DisplayPort (via USB-C Alt-DP)'}, {'Warranty': '01 Year Warranty'}, {'WebCam': 'Webcam: 1080p IR Hello'}, {'Weight': '2.01 kg / 4.40 lbs'}, {'Wi-Fi': 'Intel Wireless Wi-Fi 6E AX210 (IEEE 802.11a/b/g/n/ac/ax)'}]\n\nAvailability Status: In stock.",
+    "metadata": {
+      "id": 1068,
+      "name": "Razer Blade 15 Advanced Model i7 11th Gen 32GB RAM RTX3080 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop",
+      "base_price": 365000.0,
+      "discount": 0.0,
+      "rating": 0.0,
+      "category": "Laptop",
+      "subcategory": "Gaming_Laptop",
+      "brand": "Razer",
+      "stock": 10,
+      "specs": [
+        {
+          "Audio": "Stereo 2.0 | 2 Speakers 3.5mm Combo-Jack 4-mic array THX Spatial Audio"
+        },
+        {
+          "Audio Jack Combo": "1 x 3.5mm Combo-Jack"
+        },
+        {
+          "Battery": "Built-in 80 WHr rechargeable lithium-ion polymer battery"
+        },
+        {
+          "Card Reader": "1x UHS-III SD Card Reader"
+        },
+        {
+          "Dimensions (W x D x H)": "0.67\" x 9.25\" x 13.98\" / 16.99 mm x 235 mm x 355 mm"
+        },
+        {
+          "Display": "15.6\" FHD (1920 x 1080) 360Hz, 100% SRGB, 2ms, individually factory calibrated"
+        },
+        {
+          "Graphics_Card": "NVIDIA GeForce RTX3080 8GB GDDR6 VRAM Graphics"
+        },
+        {
+          "HDMI": "1x HDMI 2.1"
+        },
+        {
+          "Keyboard": "Anti-Ghosting, Per-Key Backlighting, powered by Razer Chroma"
+        },
+        {
+          "Name": "Razer Blade 15 Advanced Model i7 11th Gen 32GB RAM RTX3080 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop"
+        },
+        {
+          "Operating System": "Windows 10 Home (64-bit)"
+        },
+        {
+          "Power Supply": "230W power adapter"
+        },
+        {
+          "Processor": "Intel Core i7-11800H Processor (24M Cache, 2.30 GHz up to 4.60 GHz)"
+        },
+        {
+          "RAM": "32GB DDR4 3200MHz dual-channel memory (slotted)"
+        },
+        {
+          "Special Feature": "Intel Platform Trust Technology (Intel PTT) security embedded, sTPM 2.0 Windows Cortana"
+        },
+        {
+          "Storage": "1TB SSD (M.2 NVMe PCIe 4.0 x4) + Open M.2 PCIe 4.0 x4 Slot for easy expansion"
+        },
+        {
+          "USB (s)": "2 x Thunderbolt 4 (USB-C) 2 x USB-C 3.2 Gen 2, Supports Power Delivery 3 (15W) 3 x USB-A 3.2 Gen 2 1x DisplayPort (via USB-C Alt-DP)"
+        },
+        {
+          "Warranty": "01 Year Warranty"
+        },
+        {
+          "WebCam": "Webcam: 1080p IR Hello"
+        },
+        {
+          "Weight": "2.01 kg / 4.40 lbs"
+        },
+        {
+          "Wi-Fi": "Intel Wireless Wi-Fi 6E AX210 (IEEE 802.11a/b/g/n/ac/ax)"
+        }
+      ],
+      "image_urls": [
+        "1068/img1.jpg",
+        "1068/img2.jpg",
+        "1068/img3.jpg",
+        "1068/img4.jpg"
+      ]
+    },
+    "distance": 1
+  },
+  {
+    "id": "sql_2",
+    "document": "The HP ZBook Fury G7 Xeon W-10885M 15.6\" UHD Mobile Workstation Laptop by HP is a premium offering in the Laptop > Gaming_Laptop segment. Priced at $355000.0, it is currently available at a discount of 0.0%. This product has received an average customer rating of 0.0 stars.\n\nProduct Specifications:\n[{'Audio': 'HP Audio Dual stereo speakers dual array digital microphone3 Functions keys for volume up and down Combo microphone/headphone jack HD audio'}, {'Audio Jack Combo': 'Yes'}, {'Battery': 'HP Long Life 8-cell, 94 Wh Li-ion polymer'}, {'Bluetooth': 'Bluetooth 5'}, {'Card Reader': '1x Smart card reader'}, {'Chipset': 'Intel WM490'}, {'Dimensions (W x D x H)': '35.94 x 23.47 x 2.29 cm (14.15 x 9.21 x 0.9 in)'}, {'Display': '15.6\" diagonal, 4K UHD (3840 x 2160), touch, IPS, Anti-reflection Corning Gorilla Glass 5, 600 nits, 100% DCI-P3'}, {'Extra M.2 Slot': 'Yes'}, {'Extra RAM Slot': 'Yes. Up to 32GB Upgradeable'}, {'Graphics_Card': 'NVIDIA Quadro RTX 3000 6GB Graphics'}, {'HDMI': '1 x HDMI 1 x HDMI 2.0b with discrete HDMI 1.4 with UMA'}, {'LAN': 'Intel I219-LM GbE, vPro RJ-45 (Ethernet) port'}, {'Name': 'HP ZBook Fury G7 Xeon W-10885M 15.6\" UHD Mobile Workstation Laptop'}, {'Operating System': 'Windows 10 Pro'}, {'Power Supply': '150 W Slim Smart external AC power adapter'}, {'Processor': 'Intel Xeon W-10885M Processor (16M Cache, 2.40 GHz up to 5.30 GHz)'}, {'RAM': '16GB DDR4 2666 ECC SDRAM'}, {'Special Feature': 'HP Fingerprint Sensor For Windows 10, Trusted Platform Module (TPM) 2.0 (FIPS 140-2 Level 2 Certified)'}, {'Storage': '1 TB PCIe NVMe M.2 SSD'}, {'Supported SSD Type': 'PCIe M.2 NVMe (Maximum 4 TB through two M.2 NVMe drives)'}, {'USB (s)': '1 x USB 3.1 Gen 1 Type-A port (charging) 2 x USB 3.1 Gen 1 1 x USB Type-C port with Thunderbolt 3, pass through support DispalyPort 1.2, USB 3.1 Gen 2, with BC 1.2 support'}, {'Warranty': '3 Year (Battery, Adapter 1 Year)'}, {'WebCam': '720p HD webcam with IR'}, {'Weight': 'Starting at 1.9 kg (4.19 lb)'}, {'Wi-Fi': 'Intel Wi-Fi 6 AX201 (2x2) Optional Near Field Communication (NFC) module'}]\n\nAvailability Status: In stock.",
+    "metadata": {
+      "id": 1046,
+      "name": "HP ZBook Fury G7 Xeon W-10885M 15.6\" UHD Mobile Workstation Laptop",
+      "base_price": 355000.0,
+      "discount": 0.0,
+      "rating": 0.0,
+      "category": "Laptop",
+      "subcategory": "Gaming_Laptop",
+      "brand": "HP",
+      "stock": 10,
+      "specs": [
+        {
+          "Audio": "HP Audio Dual stereo speakers dual array digital microphone3 Functions keys for volume up and down Combo microphone/headphone jack HD audio"
+        },
+        {
+          "Audio Jack Combo": "Yes"
+        },
+        {
+          "Battery": "HP Long Life 8-cell, 94 Wh Li-ion polymer"
+        },
+        {
+          "Bluetooth": "Bluetooth 5"
+        },
+        {
+          "Card Reader": "1x Smart card reader"
+        },
+        {
+          "Chipset": "Intel WM490"
+        },
+        {
+          "Dimensions (W x D x H)": "35.94 x 23.47 x 2.29 cm (14.15 x 9.21 x 0.9 in)"
+        },
+        {
+          "Display": "15.6\" diagonal, 4K UHD (3840 x 2160), touch, IPS, Anti-reflection Corning Gorilla Glass 5, 600 nits, 100% DCI-P3"
+        },
+        {
+          "Extra M.2 Slot": "Yes"
+        },
+        {
+          "Extra RAM Slot": "Yes. Up to 32GB Upgradeable"
+        },
+        {
+          "Graphics_Card": "NVIDIA Quadro RTX 3000 6GB Graphics"
+        },
+        {
+          "HDMI": "1 x HDMI 1 x HDMI 2.0b with discrete HDMI 1.4 with UMA"
+        },
+        {
+          "LAN": "Intel I219-LM GbE, vPro RJ-45 (Ethernet) port"
+        },
+        {
+          "Name": "HP ZBook Fury G7 Xeon W-10885M 15.6\" UHD Mobile Workstation Laptop"
+        },
+        {
+          "Operating System": "Windows 10 Pro"
+        },
+        {
+          "Power Supply": "150 W Slim Smart external AC power adapter"
+        },
+        {
+          "Processor": "Intel Xeon W-10885M Processor (16M Cache, 2.40 GHz up to 5.30 GHz)"
+        },
+        {
+          "RAM": "16GB DDR4 2666 ECC SDRAM"
+        },
+        {
+          "Special Feature": "HP Fingerprint Sensor For Windows 10, Trusted Platform Module (TPM) 2.0 (FIPS 140-2 Level 2 Certified)"
+        },
+        {
+          "Storage": "1 TB PCIe NVMe M.2 SSD"
+        },
+        {
+          "Supported SSD Type": "PCIe M.2 NVMe (Maximum 4 TB through two M.2 NVMe drives)"
+        },
+        {
+          "USB (s)": "1 x USB 3.1 Gen 1 Type-A port (charging) 2 x USB 3.1 Gen 1 1 x USB Type-C port with Thunderbolt 3, pass through support DispalyPort 1.2, USB 3.1 Gen 2, with BC 1.2 support"
+        },
+        {
+          "Warranty": "3 Year (Battery, Adapter 1 Year)"
+        },
+        {
+          "WebCam": "720p HD webcam with IR"
+        },
+        {
+          "Weight": "Starting at 1.9 kg (4.19 lb)"
+        },
+        {
+          "Wi-Fi": "Intel Wi-Fi 6 AX201 (2x2) Optional Near Field Communication (NFC) module"
+        }
+      ],
+      "image_urls": [
+        "1046/img1.jpg",
+        "1046/img2.jpg",
+        "1046/img3.jpg",
+        "1046/img4.jpg"
+      ]
+    },
+    "distance": 1
+  },
+  {
+    "id": "sql_3",
+    "document": "The Razer Blade 14 Ryzen 9 5900HX RTX3080 8GB Graphics 14\" QHD 165Hz Gaming Laptop by Razer is a premium offering in the Laptop > Gaming_Laptop segment. Priced at $325000.0, it is currently available at a discount of 0.0%. This product has received an average customer rating of 0.0 stars.\n\nProduct Specifications:\n[{'Audio': 'Built-in stereo speakers Built-in array microphone THX Spatial Audio 7.1 Codec support (via HDMI)'}, {'Audio Jack Combo': '3.5mm headphone/microphone combo port'}, {'Battery': 'Built-in 61.6WHr rechargeable lithium-ion polymer battery'}, {'Bluetooth': 'Bluetooth 5.2'}, {'Dimensions (W x D x H)': '0.66 x 8.66 x 12.59 / 16.8 mm x 220 mm x 319.7 mm'}, {'Display': '14-inch QHD 165Hz, 2560 x 1440 Display '}, {'Graphics_Card': 'NVIDIA GeForce RTX 3080 (8GB VRAM) Graphics'}, {'HDMI': 'HDMI 2.1 output'}, {'Keyboard': 'Per key RGB Powered by Razer Chroma N-Key rollover keyboard'}, {'Name': 'Razer Blade 14 Ryzen 9 5900HX RTX3080 8GB Graphics 14\" QHD 165Hz Gaming Laptop'}, {'Operating System': 'Windows 10 Home (64-bit)'}, {'Power Supply': '230W power adapter'}, {'Processor': 'AMD Ryzen 9 5900HX Processor, 8 Cores / 16 Threads, 3.3GHz Base, 4.6GHz Max Boost'}, {'RAM': '16GB DDR4-3200MHz (Fixed Onboard)'}, {'Special Feature': 'Razer Synapse 3 enabled with performance, programmable keyboard, backlighting, and fan control Kensington Security Slot Modern Standby Trusted Platform Module (TPM) 2.0'}, {'Storage': '1TB SSD (M.2 NVMe PCIe 3.0 x4)'}, {'USB (s)': '2 x USB 3.2 Gen 2 Type-A Ports 2 x USB 3.2 Gen 2 Type-C with Power Delivery and Display Port 1.4 Charging supported with 20V USB-C chargers with PD 3.0'}, {'Warranty': '01 Year Warranty'}, {'WebCam': 'Windows Hello built-in IR HD webcam (1MP / 720P)'}, {'Weight': '1.78 kg / 3.92 lbs'}, {'Wi-Fi': 'Wi-Fi 6E (802.11ax)'}]\n\nAvailability Status: In stock.",
+    "metadata": {
+      "id": 1066,
+      "name": "Razer Blade 14 Ryzen 9 5900HX RTX3080 8GB Graphics 14\" QHD 165Hz Gaming Laptop",
+      "base_price": 325000.0,
+      "discount": 0.0,
+      "rating": 0.0,
+      "category": "Laptop",
+      "subcategory": "Gaming_Laptop",
+      "brand": "Razer",
+      "stock": 10,
+      "specs": [
+        {
+          "Audio": "Built-in stereo speakers Built-in array microphone THX Spatial Audio 7.1 Codec support (via HDMI)"
+        },
+        {
+          "Audio Jack Combo": "3.5mm headphone/microphone combo port"
+        },
+        {
+          "Battery": "Built-in 61.6WHr rechargeable lithium-ion polymer battery"
+        },
+        {
+          "Bluetooth": "Bluetooth 5.2"
+        },
+        {
+          "Dimensions (W x D x H)": "0.66 x 8.66 x 12.59 / 16.8 mm x 220 mm x 319.7 mm"
+        },
+        {
+          "Display": "14-inch QHD 165Hz, 2560 x 1440 Display "
+        },
+        {
+          "Graphics_Card": "NVIDIA GeForce RTX 3080 (8GB VRAM) Graphics"
+        },
+        {
+          "HDMI": "HDMI 2.1 output"
+        },
+        {
+          "Keyboard": "Per key RGB Powered by Razer Chroma N-Key rollover keyboard"
+        },
+        {
+          "Name": "Razer Blade 14 Ryzen 9 5900HX RTX3080 8GB Graphics 14\" QHD 165Hz Gaming Laptop"
+        },
+        {
+          "Operating System": "Windows 10 Home (64-bit)"
+        },
+        {
+          "Power Supply": "230W power adapter"
+        },
+        {
+          "Processor": "AMD Ryzen 9 5900HX Processor, 8 Cores / 16 Threads, 3.3GHz Base, 4.6GHz Max Boost"
+        },
+        {
+          "RAM": "16GB DDR4-3200MHz (Fixed Onboard)"
+        },
+        {
+          "Special Feature": "Razer Synapse 3 enabled with performance, programmable keyboard, backlighting, and fan control Kensington Security Slot Modern Standby Trusted Platform Module (TPM) 2.0"
+        },
+        {
+          "Storage": "1TB SSD (M.2 NVMe PCIe 3.0 x4)"
+        },
+        {
+          "USB (s)": "2 x USB 3.2 Gen 2 Type-A Ports 2 x USB 3.2 Gen 2 Type-C with Power Delivery and Display Port 1.4 Charging supported with 20V USB-C chargers with PD 3.0"
+        },
+        {
+          "Warranty": "01 Year Warranty"
+        },
+        {
+          "WebCam": "Windows Hello built-in IR HD webcam (1MP / 720P)"
+        },
+        {
+          "Weight": "1.78 kg / 3.92 lbs"
+        },
+        {
+          "Wi-Fi": "Wi-Fi 6E (802.11ax)"
+        }
+      ],
+      "image_urls": [
+        "1066/img1.jpg",
+        "1066/img2.jpg",
+        "1066/img3.jpg"
+      ]
+    },
+    "distance": 1
+  },
+  {
+    "id": "sql_4",
+    "document": "The Asus ROG Flow X13 GV301QE Ryzen 9 5980HS RTX 3050 Ti 4GB Graphics 13.4\" 120Hz WUXGA Touch Gaming Laptop by Asus is a premium offering in the Laptop > Gaming_Laptop segment. Priced at $325000.0, it is currently available at a discount of 0.0%. This product has received an average customer rating of 0.0 stars.\n\nProduct Specifications:\n[{'Audio': 'Smart Amp Technology DAC Dolby Atmos AI noise-canceling technology Smart Amp Technology Built-in array microphone 2-speaker system with Smart Amplifier Technology'}, {'Audio Jack Combo': '1x 3.5mm Combo Audio Jack'}, {'Battery': '62WHrs, 4S1P, 4-cell Li-ion'}, {'Bluetooth': 'Bluetooth 5.1'}, {'Color(s)': 'Black (Supernova Edition)'}, {'Dimensions (W x D x H)': '29.9 x 22.2 x 1.58 ~ 1.58 cm (11.77\" x 8.74\" x 0.62\" ~ 0.62\")'}, {'Display': '13.4-inch WQUXGA (3840 x 2400) 16:10, glossy display, sRGB: 116%, Adobe: 86%, DCI-P3: 85%, Touch Screen, Refresh Rate: 120Hz, IPS-level, Pantone Validated, Support stylus'}, {'Graphics_Card': 'Graphics: NVIDIA GeForce RTX 3050 Ti 4GB VRAM (ROG XG Mobile GC31S with NVIDIA GeForce RTX 3080) '}, {'HDMI': '1x HDMI 2.0b'}, {'Keyboard': 'Backlit Chiclet Keyboard Touchpad'}, {'Name': 'Asus ROG Flow X13 GV301QE Ryzen 9 5980HS RTX 3050 Ti 4GB Graphics 13.4\" 120Hz WUXGA Touch Gaming Laptop'}, {'Operating System': 'Windows 10 Home'}, {'Power Supply': 'TYPE-C, 100W AC Adapter, Output: 20V DC, 5A, 100W, Input: 100~240V AC, 50/60Hz universal'}, {'Processor': 'AMD Ryzen 9 5980HS (16MB Cache, 3.0GHz up to 4.8GHz)'}, {'RAM': '32GB DDR4 3200MHz LPDDR4X RAM'}, {'Special Feature': 'Finger Print'}, {'Storage': '1TB M.2 2230 NVMe PCIe 3.0 SSD'}, {'USB (s)': '1x USB 3.2 Gen 2 Type-A 1x ROG XG Mobile Interface 2x USB 3.2 Gen 2 Type-C support DisplayPort / power delivery'}, {'Warranty': '02 years International Limited Warranty (Battery & Adapter)'}, {'WebCam': '720P HD camera'}, {'Weight': '1.30 Kg (2.87 lbs)'}, {'Wi-Fi': 'Wi-Fi 6 (802.11ax)'}]\n\nAvailability Status: In stock.",
+    "metadata": {
+      "id": 1067,
+      "name": "Asus ROG Flow X13 GV301QE Ryzen 9 5980HS RTX 3050 Ti 4GB Graphics 13.4\" 120Hz WUXGA Touch Gaming Laptop",
+      "base_price": 325000.0,
+      "discount": 0.0,
+      "rating": 0.0,
+      "category": "Laptop",
+      "subcategory": "Gaming_Laptop",
+      "brand": "Asus",
+      "stock": 10,
+      "specs": [
+        {
+          "Audio": "Smart Amp Technology DAC Dolby Atmos AI noise-canceling technology Smart Amp Technology Built-in array microphone 2-speaker system with Smart Amplifier Technology"
+        },
+        {
+          "Audio Jack Combo": "1x 3.5mm Combo Audio Jack"
+        },
+        {
+          "Battery": "62WHrs, 4S1P, 4-cell Li-ion"
+        },
+        {
+          "Bluetooth": "Bluetooth 5.1"
+        },
+        {
+          "Color(s)": "Black (Supernova Edition)"
+        },
+        {
+          "Dimensions (W x D x H)": "29.9 x 22.2 x 1.58 ~ 1.58 cm (11.77\" x 8.74\" x 0.62\" ~ 0.62\")"
+        },
+        {
+          "Display": "13.4-inch WQUXGA (3840 x 2400) 16:10, glossy display, sRGB: 116%, Adobe: 86%, DCI-P3: 85%, Touch Screen, Refresh Rate: 120Hz, IPS-level, Pantone Validated, Support stylus"
+        },
+        {
+          "Graphics_Card": "Graphics: NVIDIA GeForce RTX 3050 Ti 4GB VRAM (ROG XG Mobile GC31S with NVIDIA GeForce RTX 3080) "
+        },
+        {
+          "HDMI": "1x HDMI 2.0b"
+        },
+        {
+          "Keyboard": "Backlit Chiclet Keyboard Touchpad"
+        },
+        {
+          "Name": "Asus ROG Flow X13 GV301QE Ryzen 9 5980HS RTX 3050 Ti 4GB Graphics 13.4\" 120Hz WUXGA Touch Gaming Laptop"
+        },
+        {
+          "Operating System": "Windows 10 Home"
+        },
+        {
+          "Power Supply": "TYPE-C, 100W AC Adapter, Output: 20V DC, 5A, 100W, Input: 100~240V AC, 50/60Hz universal"
+        },
+        {
+          "Processor": "AMD Ryzen 9 5980HS (16MB Cache, 3.0GHz up to 4.8GHz)"
+        },
+        {
+          "RAM": "32GB DDR4 3200MHz LPDDR4X RAM"
+        },
+        {
+          "Special Feature": "Finger Print"
+        },
+        {
+          "Storage": "1TB M.2 2230 NVMe PCIe 3.0 SSD"
+        },
+        {
+          "USB (s)": "1x USB 3.2 Gen 2 Type-A 1x ROG XG Mobile Interface 2x USB 3.2 Gen 2 Type-C support DisplayPort / power delivery"
+        },
+        {
+          "Warranty": "02 years International Limited Warranty (Battery & Adapter)"
+        },
+        {
+          "WebCam": "720P HD camera"
+        },
+        {
+          "Weight": "1.30 Kg (2.87 lbs)"
+        },
+        {
+          "Wi-Fi": "Wi-Fi 6 (802.11ax)"
+        }
+      ],
+      "image_urls": [
+        "1067/img1.jpg",
+        "1067/img2.jpg",
+        "1067/img3.jpg",
+        "1067/img4.jpg",
+        "1067/img5.jpg"
+      ]
+    },
+    "distance": 1
+  },
+  {
+    "id": "sql_5",
+    "document": "The Razer Blade 15 Advanced Model Core i7 11th Gen RTX3070 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop by Razer is a premium offering in the Laptop > Gaming_Laptop segment. Priced at $310000.0, it is currently available at a discount of 0.0%. This product has received an average customer rating of 0.0 stars.\n\nProduct Specifications:\n[{'Audio': 'Stereo 2.0 | 2 Speakers 3.5mm Combo-Jack 4-mic array THX Spatial Audio'}, {'Audio Jack Combo': '1 x 3.5mm Combo-Jack'}, {'Battery': 'Built-in 80 WHr rechargeable lithium-ion polymer battery'}, {'Card Reader': '1x UHS-III SD Card Reader'}, {'Dimensions (W x D x H)': '0.67\" x 9.25\" x 13.98\" / 16.99 mm x 235 mm x 355 mm'}, {'Display': '15.6\" FHD (1920 x 1080) 360Hz, 100% SRGB, 2ms, individually factory calibrated'}, {'Graphics_Card': 'NVIDIA GeForce RTX3070 8GB GDDR6 VRAM Graphics'}, {'HDMI': '1x HDMI 2.1'}, {'Keyboard': 'Anti-Ghosting, Per-Key Backlighting, powered by Razer Chroma'}, {'Name': 'Razer Blade 15 Advanced Model Core i7 11th Gen RTX3070 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop'}, {'Operating System': 'Windows 10 Home (64-bit)'}, {'Power Supply': '230W power adapter'}, {'Processor': 'Intel Core i7-11800H Processor (24M Cache, 2.30 GHz up to 4.60 GHz)'}, {'RAM': '16GB DDR4 3200MHz dual-channel memory (slotted)'}, {'Special Feature': 'Intel Platform Trust Technology (Intel PTT) security embedded, sTPM 2.0 Windows Cortana'}, {'Storage': '1TB SSD (M.2 NVMe PCIe 4.0 x4) + Open M.2 PCIe 4.0 x4 Slot for easy expansion'}, {'USB (s)': '2 x Thunderbolt 4 (USB-C) 2 x USB-C 3.2 Gen 2, Supports Power Delivery 3 (15W) 3 x USB-A 3.2 Gen 2 1x DisplayPort (via USB-C Alt-DP)'}, {'Warranty': '01 Year Warranty'}, {'WebCam': 'Webcam: 1080p IR Hello'}, {'Weight': '2.01 kg / 4.40 lbs'}, {'Wi-Fi': 'Intel Wireless Wi-Fi 6E AX210 (IEEE 802.11a/b/g/n/ac/ax)'}]\n\nAvailability Status: In stock.",
+    "metadata": {
+      "id": 1065,
+      "name": "Razer Blade 15 Advanced Model Core i7 11th Gen RTX3070 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop",
+      "base_price": 310000.0,
+      "discount": 0.0,
+      "rating": 0.0,
+      "category": "Laptop",
+      "subcategory": "Gaming_Laptop",
+      "brand": "Razer",
+      "stock": 10,
+      "specs": [
+        {
+          "Audio": "Stereo 2.0 | 2 Speakers 3.5mm Combo-Jack 4-mic array THX Spatial Audio"
+        },
+        {
+          "Audio Jack Combo": "1 x 3.5mm Combo-Jack"
+        },
+        {
+          "Battery": "Built-in 80 WHr rechargeable lithium-ion polymer battery"
+        },
+        {
+          "Card Reader": "1x UHS-III SD Card Reader"
+        },
+        {
+          "Dimensions (W x D x H)": "0.67\" x 9.25\" x 13.98\" / 16.99 mm x 235 mm x 355 mm"
+        },
+        {
+          "Display": "15.6\" FHD (1920 x 1080) 360Hz, 100% SRGB, 2ms, individually factory calibrated"
+        },
+        {
+          "Graphics_Card": "NVIDIA GeForce RTX3070 8GB GDDR6 VRAM Graphics"
+        },
+        {
+          "HDMI": "1x HDMI 2.1"
+        },
+        {
+          "Keyboard": "Anti-Ghosting, Per-Key Backlighting, powered by Razer Chroma"
+        },
+        {
+          "Name": "Razer Blade 15 Advanced Model Core i7 11th Gen RTX3070 8GB Graphics 15.6\" FHD 360Hz Gaming Laptop"
+        },
+        {
+          "Operating System": "Windows 10 Home (64-bit)"
+        },
+        {
+          "Power Supply": "230W power adapter"
+        },
+        {
+          "Processor": "Intel Core i7-11800H Processor (24M Cache, 2.30 GHz up to 4.60 GHz)"
+        },
+        {
+          "RAM": "16GB DDR4 3200MHz dual-channel memory (slotted)"
+        },
+        {
+          "Special Feature": "Intel Platform Trust Technology (Intel PTT) security embedded, sTPM 2.0 Windows Cortana"
+        },
+        {
+          "Storage": "1TB SSD (M.2 NVMe PCIe 4.0 x4) + Open M.2 PCIe 4.0 x4 Slot for easy expansion"
+        },
+        {
+          "USB (s)": "2 x Thunderbolt 4 (USB-C) 2 x USB-C 3.2 Gen 2, Supports Power Delivery 3 (15W) 3 x USB-A 3.2 Gen 2 1x DisplayPort (via USB-C Alt-DP)"
+        },
+        {
+          "Warranty": "01 Year Warranty"
+        },
+        {
+          "WebCam": "Webcam: 1080p IR Hello"
+        },
+        {
+          "Weight": "2.01 kg / 4.40 lbs"
+        },
+        {
+          "Wi-Fi": "Intel Wireless Wi-Fi 6E AX210 (IEEE 802.11a/b/g/n/ac/ax)"
+        }
+      ],
+      "image_urls": [
+        "1065/img1.jpg",
+        "1065/img2.jpg",
+        "1065/img3.jpg",
+        "1065/img4.jpg"
+      ]
+    },
+    "distance": 1
+  },
+  {
+    "id": "sql_6",
+    "document": "The Razer Blade 15 Advanced Model Core i7 10th 15.6\" FHD Gaming Laptop With RTX 2080 SUPER Max-Q 8GB Graphics by Razer is a premium offering in the Laptop > Gaming_Laptop segment. Priced at $295000.0, it is currently available at a discount of 0.0%. This product has received an average customer rating of 0.0 stars.\n\nProduct Specifications:\n[{'Audio': 'Built-in Stereo speakers 3.5mm headphone/microphone combo port Built-in array microphone Dolby Atmos support 7.1 Codec support (via HDMI)'}, {'Audio Jack Combo': '3.5mm headphone/microphone combo port'}, {'Battery': '80Wh'}, {'Bluetooth': 'Bluetooth 5.1'}, {'Card Reader': 'SD Card Reader, UHS-III'}, {'Color(s)': 'Black with backlit green logo and green USB ports'}, {'Dimensions (W x D x H)': '17.8mm x 235mm x 355mm'}, {'Display': '15.6\" Full HD 300Hz, 100% sRGB, 4.9mm bezel, factory calibrated'}, {'Graphics_Card': 'NVIDIA GeForce RTX 2080 SUPER with Max-Q Design (8GB GDDR6 VRAM)'}, {'HDMI': 'HDMI 2.0B output'}, {'Keyboard': 'Per-key RGB powered by Razer Chroma'}, {'Name': 'Razer Blade 15 Advanced Model Core i7 10th 15.6\" FHD Gaming Laptop With RTX 2080 SUPER Max-Q 8GB Graphics'}, {'Operating System': 'Windows 10 Home (64-bit)'}, {'Processor': 'Intel Core i7-10875H Processor (16M Cache, 2.30 GHz up to 5.10 GHz)'}, {'RAM': '16GB Dual-Channel (8GB x 2) DDR4-2933MHz'}, {'Special Feature': 'Razer Synapse 3 enabled with programmable keyboard Intel Platform Trust Technology (Intel PTT) security embedded Kensington Security Slot'}, {'Storage': '1TB SSD (M.2 NVMe PCIe 3.0 x4)'}, {'USB (s)': 'USB 3.2 Gen 2 (USB-A) x2 USB-C 3.2 Gen 2 Thunderbolt 3 (USB-C)'}, {'Warranty': '01 Year Warranty'}, {'WebCam': 'Windows Hello built-in IR HD webcam (1MP / 720P)'}, {'Weight': '2.14 kg'}, {'Wi-Fi': 'Intel Wireless-AX201 (802.11a/b/g/n/ac/ax)'}]\n\nAvailability Status: In stock.",
+    "metadata": {
+      "id": 1064,
+      "name": "Razer Blade 15 Advanced Model Core i7 10th 15.6\" FHD Gaming Laptop With RTX 2080 SUPER Max-Q 8GB Graphics",
+      "base_price": 295000.0,
+      "discount": 0.0,
+      "rating": 0.0,
+      "category": "Laptop",
+      "subcategory": "Gaming_Laptop",
+      "brand": "Razer",
+      "stock": 10,
+      "specs": [
+        {
+          "Audio": "Built-in Stereo speakers 3.5mm headphone/microphone combo port Built-in array microphone Dolby Atmos support 7.1 Codec support (via HDMI)"
+        },
+        {
+          "Audio Jack Combo": "3.5mm headphone/microphone combo port"
+        },
+        {
+          "Battery": "80Wh"
+        },
+        {
+          "Bluetooth": "Bluetooth 5.1"
+        },
+        {
+          "Card Reader": "SD Card Reader, UHS-III"
+        },
+        {
+          "Color(s)": "Black with backlit green logo and green USB ports"
+        },
+        {
+          "Dimensions (W x D x H)": "17.8mm x 235mm x 355mm"
+        },
+        {
+          "Display": "15.6\" Full HD 300Hz, 100% sRGB, 4.9mm bezel, factory calibrated"
+        },
+        {
+          "Graphics_Card": "NVIDIA GeForce RTX 2080 SUPER with Max-Q Design (8GB GDDR6 VRAM)"
+        },
+        {
+          "HDMI": "HDMI 2.0B output"
+        },
+        {
+          "Keyboard": "Per-key RGB powered by Razer Chroma"
+        },
+        {
+          "Name": "Razer Blade 15 Advanced Model Core i7 10th 15.6\" FHD Gaming Laptop With RTX 2080 SUPER Max-Q 8GB Graphics"
+        },
+        {
+          "Operating System": "Windows 10 Home (64-bit)"
+        },
+        {
+          "Processor": "Intel Core i7-10875H Processor (16M Cache, 2.30 GHz up to 5.10 GHz)"
+        },
+        {
+          "RAM": "16GB Dual-Channel (8GB x 2) DDR4-2933MHz"
+        },
+        {
+          "Special Feature": "Razer Synapse 3 enabled with programmable keyboard Intel Platform Trust Technology (Intel PTT) security embedded Kensington Security Slot"
+        },
+        {
+          "Storage": "1TB SSD (M.2 NVMe PCIe 3.0 x4)"
+        },
+        {
+          "USB (s)": "USB 3.2 Gen 2 (USB-A) x2 USB-C 3.2 Gen 2 Thunderbolt 3 (USB-C)"
+        },
+        {
+          "Warranty": "01 Year Warranty"
+        },
+        {
+          "WebCam": "Windows Hello built-in IR HD webcam (1MP / 720P)"
+        },
+        {
+          "Weight": "2.14 kg"
+        },
+        {
+          "Wi-Fi": "Intel Wireless-AX201 (802.11a/b/g/n/ac/ax)"
+        }
+      ],
+      "image_urls": [
+        "1064/img1.jpg",
+        "1064/img2.jpg",
+        "1064/img3.jpg"
+      ]
+    },
+    "distance": 1
+  }
+]
+2025-04-26 09:32:15,464 - sentence_transformers.cross_encoder.CrossEncoder - INFO - Use pytorch device: cpu
