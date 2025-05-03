@@ -85,6 +85,7 @@ class SQLAgent:
             return None
 
         llm = ChatOpenAI(model='gpt-4o', response_format={"type": "json_object"}, temperature=0)
+        # llm = ChatOllama(model="codellama:latest", temperature=0)
 
         template = """You are a {dialect} expert. Given an input question, create a syntactically correct {dialect} query to run.
             Unless the user specifies in the question a specific number of examples to obtain, query for at most {top_k} results using the LIMIT clause as per {dialect}. You can order the results to return the most informative data in the database.
