@@ -84,6 +84,7 @@ async def startup_event():
 async def serve_page(request: Request):
     return templates.TemplateResponse("search.html", {"request": request})
 
+
 @app.get("/search")
 async def search_products(query):
     results = run_search_pipeline(query)

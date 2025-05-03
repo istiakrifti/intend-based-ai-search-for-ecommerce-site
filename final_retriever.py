@@ -3,7 +3,7 @@ from retriever import Retriever
 from queryexpansion import QueryExpansionEngine
 from constants import *
 
-def retrieve_and_rerank(query, retriever, reranker, sql_documents, top_k=5):
+def retrieve_and_rerank(query, retriever, reranker, sql_documents, top_k=5, retrieved_docs=None):
     """
     Utility function that connects retriever and reranker without coupling them.
     
@@ -17,7 +17,7 @@ def retrieve_and_rerank(query, retriever, reranker, sql_documents, top_k=5):
         List of reranked documents with their scores
     """
     # Step 1: Get raw results from the retriever
-    retrieved_docs = retriever.retrieve(query)
+    # retrieved_docs = retriever.retrieve(query)
     
     print("Before")
     # retriever.show_retrievals(retrieved_docs)
@@ -72,34 +72,60 @@ def get_result(results, verbose=True):
 
     return all_metadata
 
-def final_retrieval(query, sql_documents):
-    # Configuration
-    config = {
-        'vector_db_path': DB_PATH,
-        'embedding_model': OPENAI_EMBEDDING_MODEL,
-        'n_retrievals': 6
-    }
+
+# Configuration
+config = {
+    'vector_db_path': DB_PATH,
+    'embedding_model': OPENAI_EMBEDDING_MODEL,
+    'n_retrievals': 6
+}
+
+# Initialize query expansion engine
+query_expansion = QueryExpansionEngine(
+    num_queries=4,
+    model_name=QUERY_EXPANSION_MODEL
+)
+
+# Initialize retriever
+retriever = Retriever(
+    query_expansion_engine=query_expansion,
+    config=config
+)
+
+
+def final_retrieval(query):
+    # # Configuration
+    # config = {
+    #     'vector_db_path': DB_PATH,
+    #     'embedding_model': OPENAI_EMBEDDING_MODEL,
+    #     'n_retrievals': 6
+    # }
     
-    # Initialize query expansion engine
-    query_expansion = QueryExpansionEngine(
-        num_queries=4,
-        model_name=QUERY_EXPANSION_MODEL
-    )
+    # # Initialize query expansion engine
+    # query_expansion = QueryExpansionEngine(
+    #     num_queries=4,
+    #     model_name=QUERY_EXPANSION_MODEL
+    # )
     
-    # Initialize retriever
-    retriever = Retriever(
-        query_expansion_engine=query_expansion,
-        config=config
-    )
+    # # Initialize retriever
+    # retriever = Retriever(
+    #     query_expansion_engine=query_expansion,
+    #     config=config
+    # )
     
     # Set retrieval strategy
     retriever.set_strategy('dense')  # Or 'dense'
     
     # Initialize reranker (completely separate from retriever)
+    # reranker = ReRanker(strategy="cross_encoder")
+    retrieved_docs = retriever.retrieve(query)
+
+    return retrieved_docs
+
+def rerank(query, sql_documents, retrieved_docs):
     reranker = ReRanker(strategy="cross_encoder")
-    
     # Get reranked results
-    reranked_results = retrieve_and_rerank(query, retriever, reranker, sql_documents, top_k=5)
+    reranked_results = retrieve_and_rerank(query, retriever, reranker, sql_documents, top_k=5, retrieved_docs=retrieved_docs)
     
     # Display results
     print("=== Reranked Results ===")

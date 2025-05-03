@@ -13,20 +13,20 @@ load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 class InputValidator:
-    def __init__(self, question, context):
+    def __init__(self, question):
         self.question = question
-        self.context = context
+        # self.context = context
     
     def validate(self):
-        template="""
-            You are a helpful assistant for question-answering task.
-            You are given a question and a context. Your task is to determine if the question is relevant to the context.
-            If the question is relevant to the context, respond with 'Yes'. If it is not relevant, respond with 'No'.
-            Do not provide any additional information or explanation.
-            
-            Question: {question} 
-            Context: {context}
-            """
+        template = """
+        We sell enterprise-grade server components, mainly hard drives (SAS, SATA), processors (Intel Xeon), and related ProLiant server parts.
+
+        You are a helpful assistant. If the user's question is about any of the categories we sell — server hard drives, server processors, ProLiant server parts — respond strictly with "Yes".
+        If it is about unrelated items like laptops, phones, TVs, accessories, or general electronics, respond strictly with "No".
+
+        Question: {question}
+        """
+
         
         prompt = ChatPromptTemplate.from_template(template)
         prompt.pretty_print()
@@ -40,7 +40,7 @@ class InputValidator:
             # verbose=True
         )
 
-        result = rag_chain.invoke({"question": self.question, "context": self.context})
+        result = rag_chain.invoke({"question": self.question})
 
         return result['text']
     
